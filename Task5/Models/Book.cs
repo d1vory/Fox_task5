@@ -1,8 +1,11 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Task5.Models;
 
 public class Book
 {
     public Guid Id { get; set; }
+    [StringLength(250)]
     public string Title { get; set; } = null!;
     public int Pages { get; set; }
     
