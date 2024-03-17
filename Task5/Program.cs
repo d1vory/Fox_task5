@@ -1,3 +1,7 @@
-﻿// See https://aka.ms/new-console-template for more information
+﻿
 
-Console.WriteLine("Hello, World!");
+using Task5.Logic;
+
+var path = Path.Combine("..", "..", "..", "Files", "books.csv");
+
+BooksFileParser.ParseFileAndSaveToDB(path);

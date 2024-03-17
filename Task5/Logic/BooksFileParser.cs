@@ -1,4 +1,6 @@
+using Azure.Core;
 using Task5.Data;
+using Task5.Models;
 
 namespace Task5.Logic;
 
@@ -24,17 +26,51 @@ public static class BooksFileParser
     public static void ParseFileAndSaveToDB(string filePath, bool skipFirstLine = true)
     {
         var parsedLines = ParseFile(filePath, skipFirstLine);
-        SaveToDB(parsedLines);
+        SaveToDb(parsedLines);
     }
     
-    private static void SaveToDB(ParsedLine[] parsedLines)
+    private static void SaveToDb(ParsedLine[] parsedLines)
     {
         using (ApplicationContext db = new ApplicationContext())
         {
             foreach (var pl in parsedLines)
             {
+                var genre = db.Genres.Local.FirstOrDefault(g => g.Name == pl.Genre) ??
+                            db.Genres.FirstOrDefault(g => g.Name == pl.Genre) ??
+                            new Genre {Name = pl.Genre};
+                var author = db.Authors.Local.FirstOrDefault(a => a.Name == pl.Author) ??
+                             db.Authors.FirstOrDefault(a => a.Name == pl.Author) ?? 
+                             new Author { Name = pl.Author };
+                var publisher = db.Publishers.Local.FirstOrDefault(p => p.Name == pl.Publisher) ??
+                                db.Publishers.FirstOrDefault(p => p.Name == pl.Publisher) ??
+                                new Publisher { Name = pl.Publisher };
+                var book =db.Books.Local.FirstOrDefault(
+                              b => b.Author == author && b.Genre == genre && b.Pages == pl.Pages &&
+                                   b.Publisher == publisher &&
+                                   b.ReleaseDate == pl.ReleaseDate && b.Title == pl.Title
+                          ) ?? 
+                          db.Books.FirstOrDefault(
+                              b => b.Author == author && b.Genre == genre && b.Pages == pl.Pages &&
+                                   b.Publisher == publisher &&
+                                   b.ReleaseDate == pl.ReleaseDate && b.Title == pl.Title
+                          ) ??
+                          new Book
+                          {
+                              Author = author, Genre = genre, Pages = pl.Pages, Publisher = publisher,
+                              ReleaseDate = pl.ReleaseDate, Title = pl.Title
+                          };
+                // db.Genres.Add(genre);
+                // db.Authors.Add(author);
+                // db.Publishers.Add(publisher);
+                db.Books.Add(book);
                 
+                // db.Add(genre);
+                // db.Add(author);
+                // db.Add(publisher);
+                // db.Add(book);
+                //db.AddRange(genre, author, publisher, book);
             }
+            db.SaveChanges();
         }
     }
  
@@ -46,6 +82,11 @@ public static class BooksFileParser
         
         foreach (var line in File.ReadLines(filePath))
         {
+            if (skipFirstLine)
+            {
+                skipFirstLine = false;
+                continue;
+            }
             var isLineValid = TryParseLine(line, out var parsedLine);
             if (isLineValid)
             {
