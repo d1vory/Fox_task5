@@ -34,59 +34,31 @@ public static class BooksFileParser
         {
             foreach (var pl in parsedLines)
             {
-                var genre = db.Genres.Local.FirstOrDefault(g => g.Name == pl.Genre) ??
-                            db.Genres.FirstOrDefault(g => g.Name == pl.Genre) ??
+                var genre = db.Genres.FirstOrDefault(g => g.Name == pl.Genre) ??
                             new Genre {Name = pl.Genre};
-                if (genre.Id == default)
-                {
-                    db.Add(genre);
-                }
-
-                var author = db.Authors.Local.FirstOrDefault(a => a.Name == pl.Author) ??
-                             db.Authors.FirstOrDefault(a => a.Name == pl.Author) ?? 
-                             new Author { Name = pl.Author };
-                if (author.Id == default)
-                {
-                    db.Add(author);
-                }
                 
-                var publisher = db.Publishers.Local.FirstOrDefault(p => p.Name == pl.Publisher) ??
-                                db.Publishers.FirstOrDefault(p => p.Name == pl.Publisher) ??
+                var author = db.Authors.FirstOrDefault(a => a.Name == pl.Author) ?? 
+                             new Author { Name = pl.Author };
+                
+                var publisher = db.Publishers.FirstOrDefault(p => p.Name == pl.Publisher) ??
                                 new Publisher { Name = pl.Publisher };
-                if (author.Id == default)
-                {
-                    db.Add(author);
-                }
-                var book =
-                    db.Books.Local.FirstOrDefault(
-                              b => b.Author == author && b.Genre == genre && b.Pages == pl.Pages &&
-                                   b.Publisher == publisher &&
-                                   b.ReleaseDate == pl.ReleaseDate && b.Title == pl.Title
-                          ) ?? 
-                          db.Books.FirstOrDefault(
-                              b => b.Author == author && b.Genre == genre && b.Pages == pl.Pages &&
-                                   b.Publisher == publisher &&
-                                   b.ReleaseDate == pl.ReleaseDate && b.Title == pl.Title
-                          ) ??
-                          new Book
-                          {
-                              Author = author, Genre = genre, Pages = pl.Pages, Publisher = publisher,
-                              ReleaseDate = pl.ReleaseDate, Title = pl.Title
-                          };
+                
+                var book = db.Books.FirstOrDefault(
+                               b => b.Author == author && b.Genre == genre && b.Pages == pl.Pages &&
+                                    b.Publisher == publisher &&
+                                    b.ReleaseDate == pl.ReleaseDate && b.Title == pl.Title
+                           ) ??
+                           new Book
+                           {
+                               Author = author, Genre = genre, Pages = pl.Pages, Publisher = publisher,
+                               ReleaseDate = pl.ReleaseDate, Title = pl.Title
+                           };
                 if (book.Id == default)
                 {
                     db.Add(book);
                 }
-                // db.Genres.Add(genre);
-                // db.Authors.Add(author);
-                // db.Publishers.Add(publisher);
-                // db.Add(genre);
-                // db.Add(author);
-                // db.Add(publisher);
-                // db.Add(book);
-                //db.AddRange(genre, author, publisher, book);
+                db.SaveChanges();
             }
-            db.SaveChanges();
         }
     }
  
