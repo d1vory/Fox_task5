@@ -10,8 +10,23 @@ public class ApplicationContext: DbContext
     public DbSet<Genre> Genres   { get; set; } = null!;
     public DbSet<Publisher> Publishers  { get; set; } = null!;
     
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    public ApplicationContext() { }
+    public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options) { }
+
+    public static ApplicationContext GetInMemoryContext()
     {
-        optionsBuilder.UseSqlServer(@"data source=o-dubchak-pc2\SQLEXPRESS;initial catalog=books;trusted_connection=true;TrustServerCertificate=True;");
+        var options = new DbContextOptionsBuilder<ApplicationContext>()
+            .UseInMemoryDatabase(databaseName: "InMemoryDatabase")
+            .Options;
+        return new ApplicationContext(options);
     }
+
+    public static ApplicationContext GetSqlServerContext()
+    {
+        var options = new DbContextOptionsBuilder<ApplicationContext>()
+            .UseSqlServer(@"data source=o-dubchak-pc2\SQLEXPRESS;initial catalog=books;trusted_connection=true;TrustServerCertificate=True;")
+            .Options;
+        return new ApplicationContext(options);
+    }
+    
 }
