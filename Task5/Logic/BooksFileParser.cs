@@ -3,7 +3,7 @@ using Task5.Models;
 
 namespace Task5.Logic;
 
-public static class BooksFileParser
+public class BooksFileParser
 {
     private struct ParsedLine(
         string title,
@@ -22,47 +22,51 @@ public static class BooksFileParser
         public const int PropertyCount = 6;
     }
 
-    public static void ParseFileAndSaveToDB(string filePath, bool skipFirstLine = true)
+    private readonly ApplicationContext db;
+
+    public BooksFileParser(ApplicationContext db)
+    {
+        this.db = db;
+    }
+
+    public void ParseFileAndSaveToDB(string filePath, bool skipFirstLine = true)
     {
         var parsedLines = ParseFile(filePath, skipFirstLine);
         SaveToDb(parsedLines);
     }
     
-    private static void SaveToDb(ParsedLine[] parsedLines)
+    private void SaveToDb(ParsedLine[] parsedLines)
     {
-        using (ApplicationContext db = new ApplicationContext())
+        foreach (var pl in parsedLines)
         {
-            foreach (var pl in parsedLines)
+            var genre = db.Genres.FirstOrDefault(g => g.Name == pl.Genre) ??
+                        new Genre {Name = pl.Genre};
+            
+            var author = db.Authors.FirstOrDefault(a => a.Name == pl.Author) ?? 
+                         new Author { Name = pl.Author };
+            
+            var publisher = db.Publishers.FirstOrDefault(p => p.Name == pl.Publisher) ??
+                            new Publisher { Name = pl.Publisher };
+            
+            var book = db.Books.FirstOrDefault(
+                           b => b.Author == author && b.Genre == genre && b.Pages == pl.Pages &&
+                                b.Publisher == publisher &&
+                                b.ReleaseDate == pl.ReleaseDate && b.Title == pl.Title
+                       ) ??
+                       new Book
+                       {
+                           Author = author, Genre = genre, Pages = pl.Pages, Publisher = publisher,
+                           ReleaseDate = pl.ReleaseDate, Title = pl.Title
+                       };
+            if (book.Id == default)
             {
-                var genre = db.Genres.FirstOrDefault(g => g.Name == pl.Genre) ??
-                            new Genre {Name = pl.Genre};
-                
-                var author = db.Authors.FirstOrDefault(a => a.Name == pl.Author) ?? 
-                             new Author { Name = pl.Author };
-                
-                var publisher = db.Publishers.FirstOrDefault(p => p.Name == pl.Publisher) ??
-                                new Publisher { Name = pl.Publisher };
-                
-                var book = db.Books.FirstOrDefault(
-                               b => b.Author == author && b.Genre == genre && b.Pages == pl.Pages &&
-                                    b.Publisher == publisher &&
-                                    b.ReleaseDate == pl.ReleaseDate && b.Title == pl.Title
-                           ) ??
-                           new Book
-                           {
-                               Author = author, Genre = genre, Pages = pl.Pages, Publisher = publisher,
-                               ReleaseDate = pl.ReleaseDate, Title = pl.Title
-                           };
-                if (book.Id == default)
-                {
-                    db.Add(book);
-                }
-                db.SaveChanges();
+                db.Add(book);
             }
+            db.SaveChanges();
         }
     }
  
-    private static ParsedLine[] ParseFile(string filePath, bool skipFirstLine)
+    private ParsedLine[] ParseFile(string filePath, bool skipFirstLine)
     {
         ValidateFile(filePath);
 
@@ -87,7 +91,7 @@ public static class BooksFileParser
     }
     
 
-    private static bool TryParseLine(string line, out ParsedLine parsedLine)
+    private bool TryParseLine(string line, out ParsedLine parsedLine)
     {
         var elements = line.Split(',');
         if (elements.Length != ParsedLine.PropertyCount)
@@ -109,7 +113,7 @@ public static class BooksFileParser
         return true;
     }
 
-    private static void ValidateFile(string filePath)
+    private void ValidateFile(string filePath)
     {
         if (!File.Exists(filePath))
         {
