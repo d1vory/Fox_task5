@@ -1,7 +1,7 @@
 namespace TestTask5;
 
 [TestClass]
-public class UnitTest1
+public class TestBooksFileParser
 {
     [TestMethod]
     public void TestMethod1()
