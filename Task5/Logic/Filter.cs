@@ -28,7 +28,7 @@ public class Filter
         {
             throw new DirectoryNotFoundException("Given directory path does not exist");
         }
-        var outputFilePath = Path.Combine(pathDirectoryToNewFile, $"filtered_{DateTime.Now}.txt");
+        var outputFilePath = Path.Combine(pathDirectoryToNewFile, $"filtered_{DateTime.Now:yyyy-M-dd--HH-mm-ss}.txt");
 
         books.Include(b => b.Publisher)
             .Include(b => b.Genre)
