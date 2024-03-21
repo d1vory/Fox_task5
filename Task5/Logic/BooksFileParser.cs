@@ -22,11 +22,11 @@ public class BooksFileParser
         public const int PropertyCount = 6;
     }
 
-    private readonly ApplicationContext db;
+    private readonly ApplicationContext _db;
 
     public BooksFileParser(ApplicationContext db)
     {
-        this.db = db;
+        this._db = db;
     }
 
     public void ParseFileAndSaveToDB(string filePath, bool skipFirstLine = true)
@@ -39,16 +39,16 @@ public class BooksFileParser
     {
         foreach (var pl in parsedLines)
         {
-            var genre = db.Genres.FirstOrDefault(g => g.Name == pl.Genre) ??
+            var genre = _db.Genres.FirstOrDefault(g => g.Name == pl.Genre) ??
                         new Genre {Name = pl.Genre};
             
-            var author = db.Authors.FirstOrDefault(a => a.Name == pl.Author) ?? 
+            var author = _db.Authors.FirstOrDefault(a => a.Name == pl.Author) ?? 
                          new Author { Name = pl.Author };
             
-            var publisher = db.Publishers.FirstOrDefault(p => p.Name == pl.Publisher) ??
+            var publisher = _db.Publishers.FirstOrDefault(p => p.Name == pl.Publisher) ??
                             new Publisher { Name = pl.Publisher };
             
-            var book = db.Books.FirstOrDefault(
+            var book = _db.Books.FirstOrDefault(
                            b => b.Author == author && b.Genre == genre && b.Pages == pl.Pages &&
                                 b.Publisher == publisher &&
                                 b.ReleaseDate == pl.ReleaseDate && b.Title == pl.Title
@@ -60,9 +60,9 @@ public class BooksFileParser
                        };
             if (book.Id == default)
             {
-                db.Add(book);
+                _db.Add(book);
             }
-            db.SaveChanges();
+            _db.SaveChanges();
         }
     }
  

@@ -10,7 +10,7 @@ var db = ApplicationContext.GetSqlServerContext();
 var parser = new BooksFileParser(db);
 parser.ParseFileAndSaveToDB(path);
 
-// var filter = new Filter(){Genre = "Romance", LessThanPages = 500};
+var filter = new Filter(db){Genre = "Romance", LessThanPages = 500};
 //
 // var books = filter.DoFilter();
 //
