@@ -111,7 +111,7 @@ public class TestFilter
             var result = filter.DoFilter();
             try
             {
-                Assert.AreEqual(expectedCount, result.Length);
+                Assert.AreEqual(expectedCount, result.Count());
             }
             catch (AssertFailedException)
             {

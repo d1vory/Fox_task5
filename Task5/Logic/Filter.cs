@@ -22,8 +22,27 @@ public class Filter
         _db = db;
     }
 
+    public void SaveBooksToFile(string pathDirectoryToNewFile, IQueryable<Book> books)
+    {
+        if (!Directory.Exists(pathDirectoryToNewFile))
+        {
+            throw new DirectoryNotFoundException("Given directory path does not exist");
+        }
+        var outputFilePath = Path.Combine(pathDirectoryToNewFile, $"filtered_{DateTime.Now}.txt");
 
-    public Book[] DoFilter()
+        books.Include(b => b.Publisher)
+            .Include(b => b.Genre)
+            .Include(b => b.Author);
+        using (StreamWriter outputFile = new StreamWriter(outputFilePath))
+        {
+            foreach (var book in books.ToList())
+                outputFile.WriteLine(book);
+        }
+        Console.WriteLine($"File was created at {outputFilePath}");
+    }
+
+
+    public IQueryable<Book> DoFilter()
     {
         IQueryable<Book> books = _db.Books;
         if (!string.IsNullOrEmpty(Title))
@@ -59,7 +78,7 @@ public class Filter
             books = books.Where(b => b.ReleaseDate < PublishedAfter);
         }
 
-        return books.ToArray();
+        return books;
         
     }
 

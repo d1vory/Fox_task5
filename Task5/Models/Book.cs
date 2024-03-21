@@ -14,5 +14,9 @@ public class Book
     public Publisher Publisher { get; set; } = null!;
     
     public DateTime ReleaseDate { get; set; }
-    
+
+    public override string ToString()
+    {
+        return $"Title: {Title}, Genre: {Genre?.Name}, Author: {Author?.Name}, Publisher: {Publisher?.Name}, Pages: {Pages}, ReleaseDate: {ReleaseDate}";
+    }
 }
