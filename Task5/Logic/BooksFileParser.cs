@@ -8,23 +8,6 @@ namespace Task5.Logic;
 
 public class BooksFileParser
 {
-    private struct ParsedLine(
-        string title,
-        string pages,
-        string genre,
-        string releaseDate,
-        string author,
-        string publisher)
-    {
-        public string Title { get; set; } = title.Trim();
-        public int Pages { get; set; } = int.Parse(pages);
-        public string Genre { get; set; } = genre.Trim();
-        public DateTime ReleaseDate { get; set; } = DateTime.Parse(releaseDate);
-        public string Author { get; set; } = author.Trim();
-        public string Publisher { get; set; } = publisher.Trim();
-        public const int PropertyCount = 6;
-    }
-
     private readonly ApplicationContext _db;
 
     public BooksFileParser(ApplicationContext db)
@@ -38,7 +21,7 @@ public class BooksFileParser
         SaveToDb(parsedLines);
     }
     
-    private void SaveToDb(IEnumerable<ParsedLine> parsedLines)
+    private void SaveToDb(IEnumerable<ParsedBook> parsedLines)
     {
         foreach (var pl in parsedLines)
         {
@@ -70,7 +53,7 @@ public class BooksFileParser
         }
     }
  
-    private IEnumerable<ParsedLine>  ParseFile(string filePath, bool skipFirstLine)
+    private IEnumerable<ParsedBook> ParseFile(string filePath, bool skipFirstLine)
     {
         ValidateFile(filePath);
         using (var reader = new StreamReader(filePath)) 
@@ -78,10 +61,10 @@ public class BooksFileParser
         {
             while (csv.Read())
             {
-                ParsedLine record;
+                ParsedBook record;
                 try
                 {    
-                    record = csv.GetRecord<ParsedLine>();
+                    record = csv.GetRecord<ParsedBook>();
                 }
                 catch (CsvHelperException ex)
                 {

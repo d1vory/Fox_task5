@@ -81,7 +81,6 @@ class Program
         Console.WriteLine("_____Filter existing books in the database_____");
         Console.WriteLine("To exit, type 'exit'");
         var db = ApplicationContext.GetSqlServerContext();
-        var parser = new BooksFileParser(db);
         
         while (true)
         {
@@ -97,8 +96,8 @@ class Program
             var publishedBefore = GetDateTimeFilterCriteria("PublishedBefore");
             var publishedAfter = GetDateTimeFilterCriteria("PublishedAfter");
 
-            var filter = new Filter(db)
-            {
+            var filterService = new FilterService(db);
+            var filter = new Filter(){
                 Title = title, Genre = genre, Author = author, Publisher = publisher, MoreThanPages = moreThanPages,
                 LessThanPages = lessThanPages, PublishedBefore = publishedBefore, PublishedAfter = publishedAfter
             };
@@ -112,7 +111,7 @@ class Program
                 pathDirectoryToNewFile = Console.ReadLine();
             }
 
-            var books = filter.DoFilter()
+            var books = filterService.DoFilter(filter)
                 .Include(b => b.Publisher)
                 .Include(b => b.Genre)
                 .Include(b => b.Author);
@@ -123,7 +122,7 @@ class Program
             }
             Console.WriteLine("=========================================");
             
-            filter.SaveBooksToFile(pathDirectoryToNewFile, books);
+            filterService.SaveBooksToFile(pathDirectoryToNewFile, books);
 
             
             Console.WriteLine("Continue? To exit, type 'exit'");
