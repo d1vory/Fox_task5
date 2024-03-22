@@ -1,3 +1,5 @@
+using System.Globalization;
+using CsvHelper;
 using Microsoft.EntityFrameworkCore;
 using Task5.Data;
 using Task5.Models;
@@ -19,17 +21,29 @@ public class FilterService
         {
             throw new DirectoryNotFoundException("Given directory path does not exist");
         }
-        var outputFilePath = Path.Combine(pathDirectoryToNewFile, $"filtered_{DateTime.Now:yyyy-M-dd--HH-mm-ss}.txt");
+        var outputFilePath = Path.Combine(pathDirectoryToNewFile, $"filtered_{DateTime.Now:yyyy-M-dd--HH-mm-ss}.csv");
 
         var resBooks = books.Include(b => b.Publisher)
             .Include(b => b.Genre)
             .Include(b => b.Author)
             .ToList();
         using (StreamWriter outputFile = new StreamWriter(outputFilePath))
+        using (var csv = new CsvWriter(outputFile, CultureInfo.InvariantCulture))
         {
-            foreach (var book in resBooks)
-                outputFile.WriteLine(book);
+            csv.WriteHeader<ParsedBook>();
+            csv.NextRecord();
+            foreach (var b in resBooks)
+            {
+                var parsedBook = new ParsedBook()
+                {
+                    Title = b.Title, Pages = b.Pages, ReleaseDate = b.ReleaseDate, Author = b.Author.Name,
+                    Publisher = b.Publisher.Name, Genre = b.Genre.Name
+                };
+                csv.WriteRecord(parsedBook);
+                csv.NextRecord();
+            }
         }
+        
         Console.WriteLine($"File was created at {outputFilePath}");
     }
 

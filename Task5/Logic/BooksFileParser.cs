@@ -1,5 +1,6 @@
 using System.Globalization;
 using CsvHelper;
+using CsvHelper.Configuration;
 using Microsoft.EntityFrameworkCore;
 using Task5.Data;
 using Task5.Models;
@@ -56,8 +57,10 @@ public class BooksFileParser
     private IEnumerable<ParsedBook> ParseFile(string filePath, bool skipFirstLine)
     {
         ValidateFile(filePath);
-        using (var reader = new StreamReader(filePath)) 
-        using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
+        var config = new CsvConfiguration(CultureInfo.InvariantCulture);
+        config.TrimOptions = TrimOptions.Trim;
+        using (var reader = new StreamReader(filePath))
+        using (var csv = new CsvReader(reader, config))
         {
             while (csv.Read())
             {

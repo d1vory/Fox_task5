@@ -8,39 +8,34 @@ class Program
 {
     public static void Main(string[] args)
     {
-        var db = ApplicationContext.GetSqlServerContext();
-        var parser = new BooksFileParser(db);
-        parser.ParseFileAndSaveToDB(
-            "C:\\Users\\Olexandr\\MyProjects\\CSHARP\\foxminded\\Task5\\Task5\\Files\\books.csv");
-        
-        // Console.WriteLine(
-        //     "This is a program which works with books\n" + 
-        //     "To start, choose a mode to work: \n" +
-        //     "'1' Upload new books to database, using existing csv file\n" +
-        //     "'2' Filter existing books\n" +
-        //     "'3' to exit program");
-        // var shouldExit = false;
-        // do
-        // {
-        //     Console.WriteLine("Enter mode: ");
-        //     var userInput = Console.ReadLine();
-        //     int.TryParse(userInput, out int mode);
-        //     switch (mode)
-        //     {
-        //         case 1:
-        //             UploadNewBooks();
-        //             break;
-        //         case 2:
-        //             FilterExistingBooks();
-        //             break;
-        //         case 3:
-        //             shouldExit = true;
-        //             break;
-        //         default:
-        //             Console.WriteLine("Given mode is not valid");
-        //             break;
-        //     }
-        // } while (!shouldExit);
+        Console.WriteLine(
+            "This is a program which works with books\n" + 
+            "To start, choose a mode to work: \n" +
+            "'1' Upload new books to database, using existing csv file\n" +
+            "'2' Filter existing books\n" +
+            "'3' to exit program");
+        var shouldExit = false;
+        do
+        {
+            Console.WriteLine("Enter mode: ");
+            var userInput = Console.ReadLine();
+            int.TryParse(userInput, out int mode);
+            switch (mode)
+            {
+                case 1:
+                    UploadNewBooks();
+                    break;
+                case 2:
+                    FilterExistingBooks();
+                    break;
+                case 3:
+                    shouldExit = true;
+                    break;
+                default:
+                    Console.WriteLine("Given mode is not valid");
+                    break;
+            }
+        } while (!shouldExit);
     }
 
     private static void UploadNewBooks()
