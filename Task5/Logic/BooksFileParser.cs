@@ -1,3 +1,6 @@
+using System.Globalization;
+using CsvHelper;
+using Microsoft.EntityFrameworkCore;
 using Task5.Data;
 using Task5.Models;
 
@@ -13,12 +16,12 @@ public class BooksFileParser
         string author,
         string publisher)
     {
-        public string Title { get; set; } = title;
+        public string Title { get; set; } = title.Trim();
         public int Pages { get; set; } = int.Parse(pages);
-        public string Genre { get; set; } = genre;
+        public string Genre { get; set; } = genre.Trim();
         public DateTime ReleaseDate { get; set; } = DateTime.Parse(releaseDate);
-        public string Author { get; set; } = author;
-        public string Publisher { get; set; } = publisher;
+        public string Author { get; set; } = author.Trim();
+        public string Publisher { get; set; } = publisher.Trim();
         public const int PropertyCount = 6;
     }
 
@@ -35,23 +38,24 @@ public class BooksFileParser
         SaveToDb(parsedLines);
     }
     
-    private void SaveToDb(ParsedLine[] parsedLines)
+    private void SaveToDb(IEnumerable<ParsedLine> parsedLines)
     {
         foreach (var pl in parsedLines)
         {
-            var genre = _db.Genres.FirstOrDefault(g => g.Name == pl.Genre) ??
+            var genre = _db.Genres.FirstOrDefault(g => EF.Functions.Like(g.Name.ToLower(), $"%{pl.Genre.ToLower()}%")) ??
                         new Genre {Name = pl.Genre};
             
-            var author = _db.Authors.FirstOrDefault(a => a.Name == pl.Author) ?? 
+            var author = _db.Authors.FirstOrDefault(a => EF.Functions.Like(a.Name.ToLower(), $"%{pl.Author.ToLower()}%")) ?? 
                          new Author { Name = pl.Author };
             
-            var publisher = _db.Publishers.FirstOrDefault(p => p.Name == pl.Publisher) ??
+            var publisher = _db.Publishers.FirstOrDefault(p =>EF.Functions.Like(p.Name.ToLower(), $"%{pl.Publisher.ToLower()}%")) ??
                             new Publisher { Name = pl.Publisher };
             
             var book = _db.Books.FirstOrDefault(
                            b => b.Author == author && b.Genre == genre && b.Pages == pl.Pages &&
                                 b.Publisher == publisher &&
-                                b.ReleaseDate == pl.ReleaseDate && b.Title == pl.Title
+                                b.ReleaseDate == pl.ReleaseDate && 
+                                EF.Functions.Like(b.Title.ToLower(), $"%{pl.Title.ToLower()}%")
                        ) ??
                        new Book
                        {
@@ -66,53 +70,28 @@ public class BooksFileParser
         }
     }
  
-    private ParsedLine[] ParseFile(string filePath, bool skipFirstLine)
+    private IEnumerable<ParsedLine>  ParseFile(string filePath, bool skipFirstLine)
     {
         ValidateFile(filePath);
-
-        var parsedLines = new List<ParsedLine>();
-        
-        foreach (var line in File.ReadLines(filePath))
+        using (var reader = new StreamReader(filePath)) 
+        using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
         {
-            if (skipFirstLine)
+            while (csv.Read())
             {
-                skipFirstLine = false;
-                continue;
+                ParsedLine record;
+                try
+                {    
+                    record = csv.GetRecord<ParsedLine>();
+                }
+                catch (CsvHelperException ex)
+                {
+                    continue;
+                }
+                yield return record;
             }
-            var isLineValid = TryParseLine(line, out var parsedLine);
-            if (isLineValid)
-            {
-                parsedLines.Add(parsedLine);
-            }
-            
         }
-
-        return parsedLines.ToArray();
     }
     
-
-    private bool TryParseLine(string line, out ParsedLine parsedLine)
-    {
-        var elements = line.Split(',');
-        if (elements.Length != ParsedLine.PropertyCount)
-        {
-            parsedLine = default;
-            return false;
-        }
-
-        try
-        {
-             parsedLine = new ParsedLine(elements[0], elements[1],elements[2],elements[3],elements[4],elements[5]);
-        }
-        catch (FormatException e)
-        {
-            parsedLine = default;
-            return false;
-        }
-        
-        return true;
-    }
-
     private void ValidateFile(string filePath)
     {
         if (!File.Exists(filePath))
